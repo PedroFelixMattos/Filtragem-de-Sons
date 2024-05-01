@@ -1,0 +1,27 @@
+function [sinal_W,sinal_SE1, sinal_ST, d, s]=todos_filtros(sinal, sinalLimpo, fs, R, IS);
+  loadPacotes();
+  if (nargin<5 | isstruct(IS))
+    IS=.25; %Initial Silence or Noise Only part in seconds
+  end
+  d=[];
+  s=[];
+  auxd = itakuraSaito(sinalLimpo,sinal, R);
+  d= [d,auxd];
+  auxs=SNRseg(sinalLimpo, sinal);
+  s = [s,auxs];
+  sinal_SE1 = SSBoll79(sinal,fs,IS);
+  auxd = itakuraSaito(sinal_SE1,sinal, R);
+  d= [d,auxd];
+  auxs=SNRseg(sinal_SE1, sinal);
+  s = [s,auxs];
+  sinal_W = WienerScalart96(sinal,fs,IS);
+  auxd = itakuraSaito(sinal_W, sinal, R);
+  d= [d,auxd];
+  auxs=SNRseg(sinal_W, sinal);
+  s = [s,auxs];
+  sinal_ST = pastdNovo(sinal);
+  auxd = itakuraSaito(sinal_ST, sinal, R);
+  d= [d,auxd];
+  auxs=SNRseg(sinal_ST, sinal);
+  s = [s,auxs];
+end
