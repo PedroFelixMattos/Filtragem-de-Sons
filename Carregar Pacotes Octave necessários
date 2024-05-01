@@ -1,0 +1,4 @@
+function loadPacotes()
+  pkg load statistics
+  pkg load tsa
+  pkg load signal
