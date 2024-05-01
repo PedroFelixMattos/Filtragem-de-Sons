@@ -1,0 +1,54 @@
+function sinalL=pastdNovo(sinalR)
+%Função que reduz o ruído de um sinal de voz com tradicional algoritmo
+%PASTd (Subspace Tracking)... código construído a partir de [1, pg.389]
+%uso: sinalLimpo=pastdNovo(sinalRuidoso)
+% sinaR - Sinal com a presença de ruído branco
+% sinalL - Sinal com a redução do ruído branco
+%Referência:
+% [1] LOUIZOU P.C. Speech Enhancement: Theory and Practice, Second Edition.
+% Taylor & Francis, 2007.
+  T=length(sinalR);
+  sinalL=[];
+  MAX=100;%Tamanho de cada frame
+  %percorre o sinal frame por frame
+  for p=1:MAX:T
+    %trata o último frame
+    if (p+MAX-1>T)
+      MAX=T-p+1;
+    end
+    a=sinalR(p:p+MAX-1);%frame a ser tratado
+    N=length(a);%tamanho do frame
+    U=eye(N);%Início da matriz com os autovetores
+    aux=U(:,1);%valor inicial da matriz de autovetores
+    lambda=ones(1,N);%vetor com os autovalores
+    B=0.99; %fator de amortecimento
+    %%%%%PASTd%%%%%%
+    for n=1:N
+      y=a;
+      for i=1:1
+        k=n-1;
+        if(k==0)%para a primeira iteração
+          k=1;
+          U(:,k)=aux;
+          lambda(k)=1;
+        end
+        v=(U(:,k))'*y;
+        lambda(n)=B*lambda(k)+(abs(v))^2;
+        e=y-U(:,k)*v;
+        U(:,n)=U(:,k)+e*(v/lambda(n));
+        y=y-(U(:,n)*v);
+      end
+    end 
+    %RECONSTRUINDO O SINAL
+    lambda=sort(lambda,'descend');
+    vari=10;%NÍVEL DE SUPRESSÃO DO RUÍDO
+    q=exp(-vari.^2./lambda).^(1/2);
+    Q=diag(q);
+    H=U*Q*U';
+    x1=H*a;%frame reconstruído
+    sinalL=[sinalL;x1];%Adiciona o frame ao sinal limpo
+    %Esse frame não é pequeno demais? 100 em um vetor na
+    %casa dos 10^5-10^6, porque faz diferença?
+  end
+  sinalL=normaliza(sinalL);
+end
