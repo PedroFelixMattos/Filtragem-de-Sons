@@ -1,0 +1,56 @@
+function SNRseg=SNRseg(sinalLimpo, sinalPoluido) 
+  SNRseg = 0;
+  if size(sinalLimpo,axis = 1) < size(sinalLimpo, axis= 2)
+    sinalLimpo = sinalLimpo';
+  endif
+  if size(sinalPoluido,axis = 1) < size(sinalPoluido, axis= 2)
+    sinalPoluido = sinalPoluido';
+  endif
+  if length(sinalLimpo)>length(sinalPoluido)
+    sinalPoluido = resize(sinalPoluido, size(sinalLimpo));
+  else
+    sinalLimpo = resize(sinalLimpo, size(sinalPoluido));
+  endif
+  sinalLimpoSegmentado = segment(sinalLimpo);
+  sinalPoluidoSegmentado = segment(sinalPoluido);
+  M = size(sinalPoluidoSegmentado,axis=1);
+  N = size(sinalPoluidoSegmentado,axis=2);
+  for j = 1:M
+    auxSNRseg = 0;
+    for n=1:N
+      if((sinalPoluidoSegmentado(j,n)-sinalLimpoSegmentado(j,n))!=0)
+        auxSNRseg=auxSNRseg+((sinalPoluidoSegmentado(j,n)^2)/((sinalPoluidoSegmentado(j,n)-sinalLimpoSegmentado(j,n))^2));
+      endif
+    endfor
+    auxSNRseg = log10(auxSNRseg);
+    SNRseg = SNRseg + auxSNRseg;
+  end
+  SNRseg = SNRseg/M;
+endfunction
+function Seg=segment(signal,W,SP,Window)
+% SEGMENT chops a signal to overlapping windowed segments
+% A= SEGMENT(X,W,SP,WIN) returns a matrix which its columns are segmented
+% and windowed frames of the input one dimentional signal, X. W is the
+% number of samples per window, default value W=256. SP is the shift
+% percentage, default value SP=0.4. WIN is the window that is multiplied by
+% each segment and its length should be W. the default window is hamming
+% window.
+% 06-Sep-04
+% Esfandiar Zavarehei
+  if nargin<3
+    SP=.4;
+  end
+  if nargin<2
+    W=256;
+  end
+  if nargin<4
+    Window=hamming(W);
+  end
+  Window=Window(:); %make it a column vector
+  L=length(signal);
+  SP=fix(W.*SP);
+  N=fix((L-W)/SP +1); %number of segments
+  Index=(repmat(1:W,N,1)+repmat((0:(N-1))'*SP,1,W))';
+  hw=repmat(Window,1,N);
+  Seg=signal(Index).*hw;
+endfunction
