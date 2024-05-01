@@ -1,0 +1,21 @@
+function d = itakuraSaito(sinalLimpo, sinalRuidoso, R)
+  if size(sinalLimpo,axis = 1) < size(sinalLimpo, axis= 2)
+    sinalLimpo = sinalLimpo';
+  endif
+  if size(sinalRuidoso,axis = 1) < size(sinalRuidoso, axis= 2)
+    sinalRuidoso = sinalRuidoso';
+  endif
+  if length(sinalLimpo)>length(sinalRuidoso)
+    sinalRuidoso = resize(sinalRuidoso, size(sinalLimpo));
+  else
+    sinalLimpo = resize(sinalLimpo, size(sinalRuidoso));
+  endif
+  p = length(sinalLimpo);
+  A = lpc(sinalLimpo,p);
+  B = lpc(sinalRuidoso,p);
+  auxA = R*(A');
+  auxB = R*(B');
+  auxA = A*auxA;
+  auxB = B*auxB;
+  d = log10(auxB/auxA);
+  d = abs(d);
