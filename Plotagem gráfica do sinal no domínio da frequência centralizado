@@ -1,0 +1,18 @@
+function analiseFreq(sinal, Fs); 
+  if(nargin<2)
+   Fs= 48000;
+  end
+  N = length(sinal);
+  spec = fft(sinal);
+  df = Fs/N;
+  min_f = -Fs/2;
+  max_f = Fs/2 - df; 
+  f = [min_f:df:max_f];
+  size(f);
+  y = fftshift(spec);
+  disp(size(f))
+  figure();
+  plot(f,y);
+  xlabel('amostras');
+   ylabel('dB')
+end
